@@ -150,7 +150,7 @@ def build(project_json, project_dir, apply_patch):
 
 	elif build_system == 'gradle-kotlin' or build_system == 'gradle-groovy':
 		try:
-			process = subprocess.Popen([GRADLEW_CMD, 'build', '-x', 'test'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+			process = subprocess.Popen([GRADLEW_CMD, 'build'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		except FileNotFoundError:
 			logging.error("Failed to find Gradlew executable at location '{}'.".format(GRADLEW_CMD))
 			shutil.rmtree(project_dir, onerror=handle_remove_readonly)
