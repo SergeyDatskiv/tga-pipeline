@@ -53,6 +53,13 @@ def main():
     parser.add_argument("--spaceToken", type=str, help="Space token, required for TestSpark", required=False)
     parser.add_argument("--prompt", type=str, help="LLM prompt for test generation, optional for TestSpark",
                         required=False)
+
+    # EvoSuite args
+    parser.add_argument("--evosuiteCliArgs", type=str, nargs='+',
+                        help="Additional EvoSuite options for its cli, optional for EvoSuite",
+                        required=False)
+    parser.add_argument("--evosuiteToolOption", type=str, nargs='+',
+                        help="If you want to use already generated LLM test TGA-Tool can handle that if you provide necessary arguments.", required=False)
     args = parser.parse_args()
     print(args)
     print(args.tool)
@@ -61,7 +68,11 @@ def main():
     if args.tool == Tool.kex:
         tool_args = KexArgs(args.kexOption if args.kexOption is not None else [])
     elif args.tool == Tool.EvoSuite:
-        tool_args = EvoSuiteArgs()
+        assert args.evosuiteCliArgs is not None
+        assert args.evosuiteToolOption is not None
+        tool_args = EvoSuiteArgs(
+            evosuite_cli_args=args.evosuiteCliArgs,
+            evosuite_tool_option=args.evosuiteToolOption)
     elif args.tool == Tool.TestSpark:
         assert args.llm is not None
         assert args.llmToken is not None

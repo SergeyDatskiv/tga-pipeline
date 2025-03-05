@@ -24,11 +24,14 @@ class KexArgs(ToolArgs):
 
 
 class EvoSuiteArgs(ToolArgs):
-    def __init__(self):
-        pass
+    def __init__(self, evosuite_cli_args: list[str], evosuite_tool_option: list[str]):
+        self.evosuite_cli_args = evosuite_cli_args
+        self.evosuite_tool_option = evosuite_tool_option
 
     def __str__(self):
-        return ''
+        evosuite_cli_str = " ".join(f"--cliArg -{cliArg}" for cliArg in self.evosuite_cli_args)
+        evosuite_tool_option = " ".join(f"--{toolOption}" for toolOption in self.evosuite_tool_option)
+        return " ".join([evosuite_tool_option, evosuite_cli_str])
 
 
 class TestSparkArgs(ToolArgs):
@@ -220,7 +223,7 @@ def generate_compose(
             name=f'tool-{tool.name}-{thread}',
             image=tool_image,
             user=f'\"{pid}\"',
-            command=f'--ip {runner_service.name} --port 10000 --tool {tool.name} --toolArgs=\'{tool_args}\''
+            command=f'--ip {runner_service.name} --port 10000 --tool {tool.name} --toolArgs="{tool_args}"'
         )
         tool_service.add_network(network)
         tool_service.add_volume(result_volume, '/var/results')
