@@ -35,7 +35,7 @@ fun main(args: Array<String>) {
     val tool = when (val name = config.getCmdValue("tool")!!) {
         "kex" -> KexCliTool(toolArgs)
         "TestSpark" -> TestSparkCliTool(toolArgs)
-        "EvoSuite" -> EvoSuiteCliTool()
+        "EvoSuite" -> EvoSuiteCliTool(toolArgs)
         "Jazzer" -> JazzerCliTool()
         "Manual" -> ManualTests()
         "stub" -> StubTool()

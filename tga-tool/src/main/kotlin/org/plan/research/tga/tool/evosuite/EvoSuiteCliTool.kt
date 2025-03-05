@@ -1,5 +1,8 @@
 package org.plan.research.tga.tool.evosuite
 
+import org.apache.commons.cli.Option
+import org.plan.research.tga.core.config.TgaConfig
+import org.plan.research.tga.core.config.buildOptions
 import org.plan.research.tga.core.dependency.Dependency
 import org.plan.research.tga.core.tool.TestGenerationTool
 import org.plan.research.tga.core.tool.TestSuite
@@ -14,17 +17,87 @@ import java.io.File
 import java.io.InputStreamReader
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.Paths
 import kotlin.io.path.bufferedWriter
 import kotlin.io.path.exists
+import kotlin.io.path.listDirectoryEntries
 import kotlin.streams.toList
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
-class EvoSuiteCliTool : TestGenerationTool {
-    override val name: String = "EvoSuite"
+/**
+ * For my experiments I use already generated LLM tests from a different experiment,
+ * and I need to provide some additional arguments to locate them.
+ * This class is supposed to parse the additional specific commands I intend if they are not specified, the tool should
+ * function as if you are inputting arguments directly to EvoSuite CLI.
+ */
+private class EvoSuiteCliParser(args: List<String>) : TgaConfig("EvoSuite", options, args.toTypedArray()) {
 
     companion object {
-        private const val EVOSUITE_VERSION = "1.2.0"
+        val options = buildOptions {
+            addOption(
+                Option("h", "help", false, "print this help and quit").also {
+                    it.isRequired = false
+                }
+            )
+
+            addOption(
+                Option(null, "llmTestLocation", true, "Location where llm tests should be.").also {
+                    it.isRequired = false
+                }
+            )
+
+            addOption(
+                Option(null, "llmTestName", true, "Name of the llm for which we should find tests.").also {
+                    it.isRequired = false
+                }
+            )
+
+            addOption(Option(null,
+                "cliArg", true, "Arguments to be passed directly to EvoSuite cli.").also {
+                it.isRequired = false
+                }
+            )
+        }
+    }
+
+    /**
+     * To make EvoSuite acknowledge LLM-generated tests which are located in a different place,
+     * I need to add a classpath to them.
+     * To do that,
+     * I need an output directory path
+     * which will inform me of which benchmark we are in and which run we are doing
+     * since I have a different set of LLM tests for each run.
+     * If, however, we do not need to add an LLM test and have simply supplied EvoSuite CLI args, then we return null.
+     */
+    fun getLlmTestClasspath(outputDirectory: Path) : Path? {
+        if (!this.hasOption("llmTestLocation")) {
+            return null
+        } else {
+            val currentBenchmark = outputDirectory.fileName.toString()
+            val currentRun = outputDirectory.parent.fileName.toString().split("-").let { it[it.size-1] }
+            val llmTestLocation = this.getCmdValue("llmTestLocation")
+            val llmTestName = this.getCmdValue("llmTestName")
+
+            val pathToResultsDirectory = Paths.get(llmTestLocation, "$llmTestName-$currentRun", currentBenchmark)
+
+            if (Files.isDirectory(pathToResultsDirectory)) {
+                return pathToResultsDirectory
+
+            } else {
+                log.debug("Path is not a directory. {}", pathToResultsDirectory)
+                return null
+            }
+        }
+    }
+}
+
+class EvoSuiteCliTool(private val args: List<String>) : TestGenerationTool {
+    override val name: String = "EvoSuite"
+    private val argParser = EvoSuiteCliParser(args)
+
+    companion object {
+        private const val EVOSUITE_VERSION = "master-1.2.1-SNAPSHOT-bugfix"
         private const val EVOSUITE_DEPENDENCY_VERSION = "1.0.6"
         private const val EVOSUITE_LOG = "evosuite.log"
         private val EVOSUITE_JAR_PATH = TGA_PIPELINE_HOME.resolve("lib", "evosuite-$EVOSUITE_VERSION.jar")
@@ -39,10 +112,29 @@ class EvoSuiteCliTool : TestGenerationTool {
         this.classPath = classPath
     }
 
+    /**
+     * Given a path to the llm tests, I need to find their canonical names, which I can do by looking at the .exec files
+     * located in the directory of the llm tests. This is because of the specific organizational structure of the llm tests I use.
+     */
+    fun findCanonicalLlmTests(directory: Path): String {
+        return directory.listDirectoryEntries().filter { it.fileName.toString().endsWith(".exec") }
+            .joinToString(":") { it.fileName.toString().replace(".exec", "") }
+    }
+
     override fun run(target: String, timeLimit: Duration, outputDirectory: Path) {
         this.outputDirectory = outputDirectory.also {
             it.toFile().mkdirs()
         }
+
+        var remainingArgs = argParser.getCmdValues("cliArg")
+
+        argParser.getLlmTestClasspath(outputDirectory)?.let {
+            (classPath as MutableList).add(it)
+            remainingArgs = remainingArgs + "-Dselected_junit=${findCanonicalLlmTests(it)}"
+        }
+
+
+
         var process: Process? = null
         try {
             process = buildProcess(
@@ -59,6 +151,7 @@ class EvoSuiteCliTool : TestGenerationTool {
                 "-Dalgorithm=DYNAMOSA",
                 "-Dno_runtime_dependency=true",
                 "-Dcriterion=LINE:BRANCH:EXCEPTION:WEAKMUTATION:OUTPUT:METHOD:METHODNOEXCEPTION:CBRANCH",
+                *remainingArgs,
             ) {
                 redirectErrorStream(true)
                 log.debug("Starting EvoSuite with command: {}", command())

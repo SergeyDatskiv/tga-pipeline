@@ -36,7 +36,7 @@ class ToolController(
                 is BenchmarkRequest -> {
                     tool.init(request.benchmark.root, request.benchmark.classPath)
 
-                    val hardTimeout = maxOf(request.timeLimit * 2, Duration.parse("40s"))
+                    val hardTimeout = maxOf(request.timeLimit * 3, Duration.parse("60s"))
                     val generationTime = measureTime {
                         val execution = executorService.submit {
                             tool.run(
