@@ -126,11 +126,11 @@ class EvoSuiteCliTool(private val args: List<String>) : TestGenerationTool {
             it.toFile().mkdirs()
         }
 
-        var remainingArgs = argParser.getCmdValues("cliArg")
+        var remainingUserSpecifiedArgs = argParser.getCmdValues("cliArg")
 
         argParser.getLlmTestClasspath(outputDirectory)?.let {
             (classPath as MutableList).add(it)
-            remainingArgs = remainingArgs + "-Dselected_junit=${findCanonicalLlmTests(it)}"
+            remainingUserSpecifiedArgs = remainingUserSpecifiedArgs + "-Dselected_junit=${findCanonicalLlmTests(it)}"
         }
 
 
@@ -151,7 +151,7 @@ class EvoSuiteCliTool(private val args: List<String>) : TestGenerationTool {
                 "-Dalgorithm=DYNAMOSA",
                 "-Dno_runtime_dependency=true",
                 "-Dcriterion=LINE:BRANCH:EXCEPTION:WEAKMUTATION:OUTPUT:METHOD:METHODNOEXCEPTION:CBRANCH",
-                *remainingArgs,
+                *remainingUserSpecifiedArgs,
             ) {
                 redirectErrorStream(true)
                 log.debug("Starting EvoSuite with command: {}", command())

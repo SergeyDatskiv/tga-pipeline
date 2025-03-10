@@ -40,7 +40,7 @@ abstract class TgaConfig(val name: String, val options: Options, args: Array<Str
     fun getCmdValue(name: String): String? = cmd.getOptionValue(name)
     fun getCmdValue(name: String, default: String) = getCmdValue(name) ?: default
     fun hasOption(name: String) = cmd.hasOption(name)
-    fun getCmdValues(name: String): Array<String> = cmd.getOptionValues(name) ?: arrayOf("")
+    fun getCmdValues(name: String): Array<String> = cmd.getOptionValues(name) ?: arrayOf()
 
     fun printHelp() {
         println(helpString)
