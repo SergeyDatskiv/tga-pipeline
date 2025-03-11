@@ -1,0 +1,15 @@
+FROM sdatskiv/tga-pipeline:base-0.0.0
+LABEL maintainer="Sergey Datskiv <sergey.datskiv@jetbrains.com>"
+LABEL version="0.0.0"
+LABEL description="Docker image similar to abdullin/tga-pipeline:runner, however with some changes needed for my experimental setup. E.g. I build on top of my base image."
+
+# run pipeline
+USER root
+WORKDIR /tga-pipeline
+RUN ./gradlew :tga-runner:build
+
+# give access to all users
+RUN chmod a+r -R /tga-pipeline
+RUN chmod a+w -R /tga-pipeline
+
+ENTRYPOINT ["java", "-jar", "/tga-pipeline/tga-runner/build/libs/tga-runner.jar"]

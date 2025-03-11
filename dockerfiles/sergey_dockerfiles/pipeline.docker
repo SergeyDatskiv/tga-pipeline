@@ -1,0 +1,38 @@
+FROM sdatskiv/tga-pipeline:benchmarks-0.0.0
+LABEL maintainer="Sergey Datskiv <sergey.datskiv@jetbrains.com>"
+LABEL version="0.0.0"
+LABEL description="Docker image similar to abdullin/tga-pipeline:base, however with some changes needed for my experimental setup. E.g. I build on top of my benchmark image and include test replication package from Test Wars paper to access already generated LLM tests."
+
+ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
+
+# install additional packages
+USER root
+RUN apt-get update
+RUN apt-get -y install \
+	wget \
+	unzip \
+	curl \
+	gnupg \
+	apt-transport-https
+
+# installing bazel
+RUN curl -fsSL https://bazel.build/bazel-release.pub.gpg | gpg --dearmor >bazel-archive-keyring.gpg
+RUN mv bazel-archive-keyring.gpg /usr/share/keyrings
+RUN echo "deb [arch=amd64 signed-by=/usr/share/keyrings/bazel-archive-keyring.gpg] https://storage.googleapis.com/bazel-apt stable jdk1.8" | tee /etc/apt/sources.list.d/bazel.list
+RUN apt-get update
+RUN apt-get -y install bazel-7.3.0
+
+# Copying test-wars-replication-package
+RUN mkdir -p /usr/share/tga-pipeline/TestSparkLlmTests
+COPY ./TestSpark /usr/share/tga-pipeline/TestSparkLlmTests
+
+# install pipeline
+USER root
+WORKDIR /
+RUN git clone https://github.com/SergeyDatskiv/tga-pipeline.git
+WORKDIR /tga-pipeline
+RUN git checkout SergeyDatskiv/development
+ENV TGA_PIPELINE_HOME=/tga-pipeline
+
+# Copy new version of EvoSuite
+COPY ./lib/evosuite-master-1.2.1-SNAPSHOT-bugfix.jar /tga-pipeline/lib
