@@ -1,9 +1,9 @@
 #!/bin/python3
 import argparse
-import collections
 import subprocess
 import sys
 import tempfile
+from typing import Iterable
 
 from generate_compose import EvoSuiteArgs
 from generate_compose import KexArgs
@@ -19,7 +19,7 @@ TOOL_IMAGE = "registry.jetbrains.team/p/automatically-generating-unit-tests/sdat
 BENCHMARKS_FILE = "/var/benchmarks/gitbug/benchmarks.json"
 
 
-class IntRange(collections.abc.Iterable[int]):
+class IntRange(Iterable[int]):
     def __init__(self, start: int, end: int):
         self.start = start
         self.end = end

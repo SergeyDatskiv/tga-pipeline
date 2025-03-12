@@ -1,7 +1,6 @@
 import os
-from collections.abc import Iterable
 from enum import Enum
-from typing import List
+from typing import List, Iterable
 
 
 class Tool(Enum):
