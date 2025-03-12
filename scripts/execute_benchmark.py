@@ -14,8 +14,8 @@ from generate_compose import Tool
 from generate_compose import generate_compose
 
 # Global parameters
-RUNNER_IMAGE = "registry.jetbrains.team/p/automatically-generating-unit-tests/sdatskiv-tga-pipeline/tga-pipeline:runner-0.0.1" # "abdullin/tga-pipeline:runner-0.0.46"
-TOOL_IMAGE = "registry.jetbrains.team/p/automatically-generating-unit-tests/sdatskiv-tga-pipeline/tga-pipeline:tools-0.0.1" # "abdullin/tga-pipeline:tools-0.0.46"
+RUNNER_IMAGE = "registry.jetbrains.team/p/automatically-generating-unit-tests/sdatskiv-tga-pipeline/tga-pipeline:runner-0.0.2" # "abdullin/tga-pipeline:runner-0.0.46"
+TOOL_IMAGE = "registry.jetbrains.team/p/automatically-generating-unit-tests/sdatskiv-tga-pipeline/tga-pipeline:tools-0.0.2" # "abdullin/tga-pipeline:tools-0.0.46"
 BENCHMARKS_FILE = "/var/benchmarks/gitbug/benchmarks.json"
 
 
