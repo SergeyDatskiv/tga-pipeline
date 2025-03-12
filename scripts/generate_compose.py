@@ -1,6 +1,7 @@
 import os
 from collections.abc import Iterable
 from enum import Enum
+from typing import List
 
 
 class Tool(Enum):
@@ -16,7 +17,7 @@ class ToolArgs:
 
 
 class KexArgs(ToolArgs):
-    def __init__(self, options: list[str]):
+    def __init__(self, options: List[str]):
         self.options = options
 
     def __str__(self):
@@ -24,7 +25,7 @@ class KexArgs(ToolArgs):
 
 
 class EvoSuiteArgs(ToolArgs):
-    def __init__(self, evosuite_cli_args: list[str], evosuite_tool_option: list[str]):
+    def __init__(self, evosuite_cli_args: List[str], evosuite_tool_option: List[str]):
         self.evosuite_cli_args = evosuite_cli_args
         self.evosuite_tool_option = evosuite_tool_option
 
