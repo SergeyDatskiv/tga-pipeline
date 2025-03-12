@@ -171,6 +171,9 @@ class EvoSuiteCliTool(private val args: List<String>) : TestGenerationTool {
             log.debug("EvoSuite process has merged")
         } catch (e: InterruptedException) {
             log.error("EvoSuite was interrupted on target $target")
+        } catch (e: Exception) {
+            log.error("Other exception: e.toString()")
+            log.error(e.stackTrace.toString())
         } finally {
             process?.terminateOrKill(attempts = 10U, waitTime = 500.milliseconds)
         }
