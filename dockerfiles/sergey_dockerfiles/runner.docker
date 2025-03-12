@@ -1,4 +1,4 @@
-FROM sdatskiv/tga-pipeline:base-0.0.0
+FROM  registry.jetbrains.team/p/automatically-generating-unit-tests/sdatskiv-tga-pipeline/tga-pipeline:base-0.0.2
 LABEL maintainer="Sergey Datskiv <sergey.datskiv@jetbrains.com>"
 LABEL version="0.0.0"
 LABEL description="Docker image similar to abdullin/tga-pipeline:runner, however with some changes needed for my experimental setup. E.g. I build on top of my base image."

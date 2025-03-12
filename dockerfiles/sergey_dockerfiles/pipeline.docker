@@ -1,7 +1,9 @@
-FROM sdatskiv/tga-pipeline:benchmarks-0.0.0
+FROM abdullin/tga-pipeline:benchmarks-0.0.46
 LABEL maintainer="Sergey Datskiv <sergey.datskiv@jetbrains.com>"
 LABEL version="0.0.0"
-LABEL description="Docker image similar to abdullin/tga-pipeline:base, however with some changes needed for my experimental setup. E.g. I build on top of my benchmark image and include test replication package from Test Wars paper to access already generated LLM tests."
+LABEL description="Docker image similar to abdullin/tga-pipeline:base, however with some changes needed for my experimental setup.\
+E.g. I build on top of my benchmark image and include test replication package from Test Wars paper to access already generated LLM tests. \
+This version is different from previous because it uses Azat's 0.0.46 benchmark version."
 
 ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
 
@@ -36,3 +38,12 @@ ENV TGA_PIPELINE_HOME=/tga-pipeline
 
 # Copy new version of EvoSuite
 COPY ./lib/evosuite-master-1.2.1-SNAPSHOT-bugfix.jar /tga-pipeline/lib
+
+# Copy the script to remove benchmarks not compatible with EvoSuite
+COPY keep_only_EvoSuite_benchmarks.py /var/scripts
+
+# Copy the csv files specifying the 136 benchmarks which we will use.
+COPY EvoSuite_Benchmark_Build_Ids.csv /var/scripts
+
+# Run the script to remove unnecessary benchmarks from the benchmarks.json config file.
+RUN python3 /var/scripts/keep_only_EvoSuite_benchmarks.py "/var/benchmarks/gitbug/benchmarks.json" "/var/scripts/EvoSuite_Benchmark_Build_Ids.csv" "benchmark buildId" "build_id"
