@@ -14,8 +14,8 @@ from generate_compose import Tool
 from generate_compose import generate_compose
 
 # Global parameters
-RUNNER_IMAGE = "abdullin/tga-pipeline:runner-0.0.46"
-TOOL_IMAGE = "abdullin/tga-pipeline:tools-0.0.46"
+RUNNER_IMAGE = "registry.jetbrains.team/p/automatically-generating-unit-tests/sdatskiv-tga-pipeline/tga-pipeline:runner-0.0.1" # "abdullin/tga-pipeline:runner-0.0.46"
+TOOL_IMAGE = "registry.jetbrains.team/p/automatically-generating-unit-tests/sdatskiv-tga-pipeline/tga-pipeline:tools-0.0.1" # "abdullin/tga-pipeline:tools-0.0.46"
 BENCHMARKS_FILE = "/var/benchmarks/gitbug/benchmarks.json"
 
 
@@ -68,11 +68,9 @@ def main():
     if args.tool == Tool.kex:
         tool_args = KexArgs(args.kexOption if args.kexOption is not None else [])
     elif args.tool == Tool.EvoSuite:
-        assert args.evosuiteCliArgs is not None
-        assert args.evosuiteToolOption is not None
         tool_args = EvoSuiteArgs(
-            evosuite_cli_args=args.evosuiteCliArgs,
-            evosuite_tool_option=args.evosuiteToolOption)
+            evosuite_cli_args=args.evosuiteCliArgs if args.evosuiteCliArgs is not None else [],
+            evosuite_tool_option=args.evosuiteToolOption if args.evosuiteToolOption is not None else [])
     elif args.tool == Tool.TestSpark:
         assert args.llm is not None
         assert args.llmToken is not None
@@ -96,14 +94,25 @@ def main():
                                     args.runName, args.runs, args.timeout, args.workers, args.output,
                                     RUNNER_IMAGE, TOOL_IMAGE, BENCHMARKS_FILE)
 
-    tmp = tempfile.NamedTemporaryFile()
-    with open(tmp.name, 'w') as file:
+    tmp = f"{args.runName}.yml" # tempfile.NamedTemporaryFile()
+    with open(tmp, 'w') as file:
         print(file.name)
         print(compose_file)
         file.write(str(compose_file))
 
-    subprocess.run(['docker-compose', '-f', tmp.name, 'up'])
-    subprocess.run(['docker-compose', '-f', tmp.name, 'down'])
+    confirmation = input("Type 'y' or 'yes' to continue, or 'n' or 'no' to end: ").lower()
+
+    if confirmation in ['n', 'no']:
+        print("Stopping the process.")
+        return
+    elif confirmation in ['y', 'yes']:
+        print("Starting docker-compose script.")
+    else:
+        print("Invalid input. Stopping the process.")
+        return
+
+    subprocess.run(['docker-compose', '-f', tmp, 'up'])
+    subprocess.run(['docker-compose', '-f', tmp, 'down'])
 
 
 if __name__ == '__main__':
