@@ -172,8 +172,8 @@ class EvoSuiteCliTool(private val args: List<String>) : TestGenerationTool {
         } catch (e: InterruptedException) {
             log.error("EvoSuite was interrupted on target $target")
         } catch (e: Exception) {
-            log.error("Other exception: e.toString()")
-            log.error(e.stackTrace.toString())
+            log.error("Other exception: ${e.toString()}")
+            log.error(e.stackTrace.contentDeepToString())
         } finally {
             process?.terminateOrKill(attempts = 10U, waitTime = 500.milliseconds)
         }
