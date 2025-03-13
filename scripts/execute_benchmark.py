@@ -94,8 +94,8 @@ def main():
                                     args.runName, args.runs, args.timeout, args.workers, args.output,
                                     RUNNER_IMAGE, TOOL_IMAGE, BENCHMARKS_FILE)
 
-    tmp = f"{args.runName}.yml" # tempfile.NamedTemporaryFile()
-    with open(tmp, 'w') as file:
+    tmp = tempfile.NamedTemporaryFile() # f"{args.runName}.yml"
+    with open(tmp.name, 'w') as file:
         print(file.name)
         print(compose_file)
         file.write(str(compose_file))
@@ -111,8 +111,8 @@ def main():
         print("Invalid input. Stopping the process.")
         return
 
-    subprocess.run(['docker-compose', '-f', tmp, 'up'])
-    subprocess.run(['docker-compose', '-f', tmp, 'down'])
+    subprocess.run(['docker-compose', '-f', tmp.name, 'up'])
+    subprocess.run(['docker-compose', '-f', tmp.name, 'down'])
 
 
 if __name__ == '__main__':
